@@ -1,0 +1,44 @@
+cycle 1
+    sub: if 
+cycle 2
+    sub: id 
+    beq: if 
+cycle 3
+    sub: ex  10 000 10
+    beq: id 
+    add: if 
+cycle 4
+    sub: me  000 10
+    beq: id 
+    add: if 
+cycle 5
+    sub: wb  10
+    beq: ex  x0 100 0x
+    add: id 
+    lw : if 
+cycle 6
+    beq: me  100 0x
+    add: ex  10 000 10
+    lw : id 
+    add: if 
+cycle 7
+    beq: wb  0x
+    add: me  000 10
+    lw : ex  01 010 11
+    add: id 
+cycle 8
+    add: wb  10
+    lw : me  010 11
+    add: ex  10 000 10
+cycle 9
+    lw : wb  11
+    add: me  000 10
+cycle 10
+    add: wb  10
+
+10 cycles
+
+$1  $2  $3  $4  $5  $6  $7  $8  $9  $10 $11 $12 $13 $14 $15 $16 $17 $18 $19 $20 $21 $22 $23 $24 $25 $26 $27 $28 $29 $30 $31 $32
+1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   
+w1  w2  w3  w4  w5  w6  w7  w8  w9  w10 w11 w12 w13 w14 w15 w16 w17 w18 w19 w20 w21 w22 w23 w24 w25 w26 w27 w28 w29 w30 w31 w32
+0   1   2   1   2   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   
