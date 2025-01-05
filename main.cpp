@@ -101,6 +101,61 @@ void every_thing(ofstream &coup, ifstream &cinp)
             size = str2[i].size();
         }
     }
+      
+         for (int i = 0; i < cycle; i++) {
+         coup << "cycle " << i + 1;
+         for (int j = 0; j < counter; j++) {
+             if (str2[j][i] != "   ") {
+                 coup << "\n    " << strs[j] << ": " << str2[j][i];
+                 if (strs[j] == "lw ") {
+                     if (str2[j][i] == "ex ") {
+                         coup << " 01 010 11";
+                     }
+                     else if (str2[j][i] == "me ") {
+                         coup << " 010 11";
+                     }
+                     else if (str2[j][i] == "wb ") {
+                         coup << " 11";
+                     }
+                 }
+                 else if (strs[j] == "sw ") {
+                     if (str2[j][i] == "ex ") {
+                         coup << " x1 001 0x";
+                     }
+                     else if (str2[j][i] == "me ") {
+                         coup << " 001 0x";
+                     }
+                     else if (str2[j][i] == "wb ") {
+                         coup << " 0x";
+                     }
+                 }
+                 else if (strs[j] == "add" || strs[j] == "sub") {
+                     if (str2[j][i] == "ex ") {
+                         coup << " 10 000 10";
+                     }
+                     else if (str2[j][i] == "me ") {
+                         coup << " 000 10";
+                     }
+                     else if (str2[j][i] == "wb ") {
+                         coup << " 10";
+                     }
+                 }
+                 else {
+                     if (str2[j][i] == "ex ") {
+                         coup << " x0 100 0x";
+                     }
+                     else if (str2[j][i] == "me ") {
+                         coup << " 100 0x";
+                     }
+                     else if (str2[j][i] == "wb ") {
+                         coup << " 0x";
+                     }
+                 }
+             }
+         }
+         coup << endl;
+     }
+
     coup << "\n\n    1   2   3   4   5   6   7   8   9   10  11  12  13  14  "
             "15  16  17  18  19  20\n";
     for (int i = 0; i < counter; i++)
