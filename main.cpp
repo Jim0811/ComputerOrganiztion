@@ -53,6 +53,45 @@ void every_thing(ofstream &coup, ifstream &cinp)
         inst.push_back({oid, a, b, c});
     }
 
+    int instruction = inst.size();
+    for (int i = 0; i < instruction; ++i)
+    {
+        if (inst[i][0] == 0)
+        {
+            strs.push_back("lw ");
+            reg[inst[i][1]] = mem[reg[inst[i][3]] + inst[i][2] / 4];
+            prestr = "lw";
+            prenum = inst[i][1];
+        }
+        else if (inst[i][0] == 1)
+        {
+            strs.push_back("sw ");
+            mem[reg[inst[i][3]] + inst[i][2] / 4] = reg[inst[i][1]];
+            prestr = "";
+        }
+        else if (inst[i][0] == 2)
+        {
+            strs.push_back("add");
+            if (prestr == "lw" &&
+                (prenum == inst[i][2] || prenum == inst[i][3]))
+            {
+                cycle++;
+                for (int k = counter; k < maxcount; k++)
+                {
+                    str2[k].insert(str2[k].begin() + position + 2,
+                                   str2[k][position + 1]);
+                }
+                position++;
+            }
+            reg[inst[i][1]] = reg[inst[i][2]] + reg[inst[i][3]];
+            prestr = "r";
+            prenum = inst[i][1];
+        }
+        cycle++;
+        counter++;
+        position++;
+    }
+
     for (int i = 0; i < maxcount; i++)
     {
         int size = str2[i].size();
