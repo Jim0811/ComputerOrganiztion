@@ -1,195 +1,91 @@
+#include <fstream>
 #include <iostream>
 #include <vector>
-#include <unordered_map>
-#include <queue>
-
 using namespace std;
-
-struct Instruction
+ifstream cinp3("../inputs/test3.txt");
+ofstream coup3("../outputs/test3.txt");
+int oid, a, b, c, maxcount = 20;
+void fcinp(int q, int w, int e, int r, int t, ifstream &cinp)
 {
-    string ins;
-    int regRs, regRt, regRd;
-    int immediate;
-    int cycleIssued;
-    int stage[5]; // 記錄每個階段的週期，-1 表示尚未進入該階段
-};
+    cinp.ignore(q);
+    cinp >> a;
+    cinp.ignore(w);
+    cinp >> b;
+    cinp.ignore(e);
+    cinp >> c;
+    cinp.ignore(r);
+    oid = t;
+}
+void every_thing(ofstream &coup, ifstream &cinp)
+{
+    int position = 0, prenum = 0, counter = 0, mem[32], reg[32], cycle = 4;
+    vector<vector<string>> str2;
+    vector<string> str = {"if ", "id ", "ex ", "me ", "wb "}, strs;
+    vector<string> strmap = {"lw ", "sw ", "add", "sub", "beq"};
+    vector<vector<int>> inst;
+    string prestr = "";
+    fill(mem, mem + 32, 1);
+    fill(reg, reg + 32, 1);
+    reg[0] = 0;
+
+    for (string operation; cinp >> operation;)
+    {
+        if (operation == "lw")
+        {
+            fcinp(2, 2, 2, 1, 0, cinp);
+        }
+        else if (operation == "sw")
+        {
+            fcinp(2, 2, 2, 1, 1, cinp);
+        }
+        else if (operation == "add")
+        {
+            fcinp(2, 3, 3, 0, 2, cinp);
+        }
+        else if (operation == "sub")
+        {
+            fcinp(2, 3, 3, 0, 3, cinp);
+        }
+        else
+        {
+            fcinp(2, 3, 1, 0, 4, cinp);
+        }
+        inst.push_back({oid, a, b, c});
+    }
+
+    for (int i = 0; i < maxcount; i++)
+    {
+        int size = str2[i].size();
+        while (size < cycle)
+        {
+            str2[i].push_back("   ");
+            size = str2[i].size();
+        }
+    }
+    coup << "\n\n    1   2   3   4   5   6   7   8   9   10  11  12  13  14  "
+            "15  16  17  18  19  20\n";
+    for (int i = 0; i < counter; i++)
+    {
+        coup << strs[i] << " ";
+        for (string s : str2[i])
+        {
+            coup << s << " ";
+        }
+        coup << endl;
+    }
+    coup << "\n"
+         << cycle << " cycles\n";
+    coup << "\n$1  $2  $3  $4  $5  $6  $7  $8  $9  $10 $11 $12 $13 $14 $15 $16 "
+            "$17 $18 $19 $20 $21 $22 $23 $24 $25 $26 $27 $28 $29 $30 $31 $32\n";
+    for (int i : mem)
+        coup << i << "   ";
+    coup << "\nw1  w2  w3  w4  w5  w6  w7  w8  w9  w10 w11 w12 w13 w14 w15 w16 "
+            "w17 w18 w19 w20 w21 w22 w23 w24 w25 w26 w27 w28 w29 w30 w31 w32\n";
+    for (int i : reg)
+        coup << i << "   ";
+}
 int main()
 {
-    int cycleCount = 1;
-    string state[5] = {"IF", "ID", "EX", "MEM", "WB"};
-    vector<Instruction> instructions;
-    queue<Instruction> pipelineStages[5];
-    unordered_map<int, int> registers;
-    unordered_map<int, int> memory;
-
-    for (int i = 0; i < 10; ++i)
-    {
-        registers[i] = 0;
-    }
-
-    instructions.push_back({"lw", 0, 0, 2, 8, 0});   // lw $2, 8($0)
-    instructions.push_back({"lw", 0, 0, 3, 12, -1}); // lw $3, 12($0)
-    instructions.push_back({"add", 2, 3, 4, 0, -2}); // add $4, $2, $3
-    instructions.push_back({"sw", 0, 0, 6, 20, -3}); // sw $6, 20($0)
-
-    memory[8] = 100; // Initialize memory for lw instructions
-    memory[12] = 200;
-
-    while (!instructions.empty() || !pipelineStages[4].empty())
-    {
-        cout << "Cycle " << cycleCount << ":" << endl;
-
-        // WB
-        if (!pipelineStages[4].empty())
-        {
-            Instruction instr = pipelineStages[4].front();
-            pipelineStages[4].pop();
-            if (instr.ins == "add" || instr.ins == "lw")
-            {
-                registers[instr.regRd] = instr.immediate;
-            }
-            cout << "Instruction: " << instr.ins << ", Stage: WB" << endl;
-        }
-
-        // MEM
-        if (!pipelineStages[3].empty())
-        {
-            Instruction instr = pipelineStages[3].front();
-            pipelineStages[3].pop();
-            if (instr.ins == "lw")
-            {
-                instr.immediate = memory[registers[instr.regRs] + instr.immediate];
-            }
-            else if (instr.ins == "sw")
-            {
-                memory[registers[instr.regRs] + instr.immediate] = registers[instr.regRt];
-            }
-            pipelineStages[4].push(instr);
-            cout << "Instruction: " << instr.ins << ", Stage: MEM" << endl;
-        }
-
-        // EX
-        if (!pipelineStages[2].empty())
-        {
-            Instruction instr = pipelineStages[2].front();
-            pipelineStages[2].pop();
-
-            int rsVal = registers[instr.regRs];
-            int rtVal = registers[instr.regRt];
-
-            // Forwarding Logic
-            if (!pipelineStages[3].empty() && instr.regRs == pipelineStages[3].back().regRd)
-            {
-                if (pipelineStages[3].back().ins == "lw")
-                    rsVal = memory[registers[pipelineStages[3].back().regRs] + pipelineStages[3].back().immediate];
-                else
-                    rsVal = pipelineStages[3].back().immediate;
-            }
-            if (!pipelineStages[3].empty() && instr.regRt == pipelineStages[3].back().regRd)
-            {
-                if (pipelineStages[3].back().ins == "lw")
-                    rtVal = memory[registers[pipelineStages[3].back().regRs] + pipelineStages[3].back().immediate];
-                else
-                    rtVal = pipelineStages[3].back().immediate;
-            }
-            if (!pipelineStages[2].empty() && instr.regRs == pipelineStages[2].back().regRd)
-            {
-                rsVal = pipelineStages[2].back().immediate;
-            }
-            if (!pipelineStages[2].empty() && instr.regRt == pipelineStages[2].back().regRd)
-            {
-                rtVal = pipelineStages[2].back().immediate;
-            }
-
-            if (instr.ins == "add")
-            {
-                instr.immediate = rsVal + rtVal;
-            }
-            else if (instr.ins == "sw")
-            {
-                // No calculation needed in EX for sw
-            }
-            pipelineStages[3].push(instr);
-            cout << "Instruction: " << instr.ins << ", Stage: EX" << endl;
-        }
-
-        // ID
-        if (!pipelineStages[1].empty())
-        {
-            Instruction instr = pipelineStages[1].front();
-            pipelineStages[1].pop();
-
-            bool stalled = false;
-
-            // Hazard Detection
-            if (instr.ins == "add" || instr.ins == "sw")
-            {
-                if ((!pipelineStages[2].empty() && (instr.regRs == pipelineStages[2].back().regRd || instr.regRt == pipelineStages[2].back().regRd)) ||
-                    (!pipelineStages[3].empty() && (instr.regRs == pipelineStages[3].back().regRd || instr.regRt == pipelineStages[3].back().regRd)))
-                {
-                    stalled = true;
-                }
-            }
-            else if (instr.ins == "lw")
-            {
-                if (!pipelineStages[2].empty() && instr.regRs == pipelineStages[2].back().regRd)
-                {
-                    stalled = true;
-                }
-            }
-
-            if (stalled)
-            {
-                pipelineStages[1].push(instr);
-                cout << "Instruction: " << instr.ins << ", Stage: STALL" << endl;
-            }
-            else
-            {
-                pipelineStages[2].push(instr);
-                cout << "Instruction: " << instr.ins << ", Stage: ID" << endl;
-            }
-        }
-
-        // IF
-        if (!instructions.empty())
-        {
-            Instruction instr = instructions.front();
-
-            // Check if IF needs to stall
-            bool stallIF = false;
-            if (!pipelineStages[1].empty() && pipelineStages[1].back().ins == "add" &&
-                (pipelineStages[1].back().regRd == instr.regRs || pipelineStages[1].back().regRd == instr.regRt))
-            {
-                stallIF = true;
-            }
-
-            if (stallIF)
-            {
-                cout << "Instruction: " << instr.ins << ", Stage: STALL (IF)" << endl;
-            }
-            else
-            {
-                instructions.erase(instructions.begin());
-                pipelineStages[1].push(instr);
-                cout << "Instruction: " << instr.ins << ", Stage: IF" << endl;
-            }
-        }
-
-        cycleCount++;
-    }
-
-    cout << "\nFinal Register Values:" << endl;
-    for (int i = 0; i < 10; ++i)
-    {
-        cout << "$" << i << ": " << registers[i] << " ";
-    }
-    cout << endl;
-    cout << "\nFinal Memory Values:" << endl;
-    for (auto it = memory.begin(); it != memory.end(); ++it)
-    {
-        cout << "mem[" << it->first << "]: " << it->second << " ";
-    }
-    cout << endl;
-
+    every_thing(coup3, cinp3);
     return 0;
 }
