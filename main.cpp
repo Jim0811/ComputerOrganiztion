@@ -27,6 +27,7 @@ void every_thing(ofstream &coup, ifstream &cinp)
     fill(mem, mem + 32, 1);
     fill(reg, reg + 32, 1);
     reg[0] = 0;
+
     for (string operation; cinp >> operation;)
     {
         if (operation == "lw")
@@ -51,9 +52,42 @@ void every_thing(ofstream &coup, ifstream &cinp)
         }
         inst.push_back({oid, a, b, c});
     }
+
     int instruction = inst.size();
-     for (int i = 0; i < instruction; ++i) {
-         if (inst[i][0] == 3) {
+    for (int i = 0; i < instruction; ++i)
+    {
+        if (inst[i][0] == 0)
+        {
+            strs.push_back("lw ");
+            reg[inst[i][1]] = mem[reg[inst[i][3]] + inst[i][2] / 4];
+            prestr = "lw";
+            prenum = inst[i][1];
+        }
+        else if (inst[i][0] == 1)
+        {
+            strs.push_back("sw ");
+            mem[reg[inst[i][3]] + inst[i][2] / 4] = reg[inst[i][1]];
+            prestr = "";
+        }
+        else if (inst[i][0] == 2)
+        {
+            strs.push_back("add");
+            if (prestr == "lw" &&
+                (prenum == inst[i][2] || prenum == inst[i][3]))
+            {
+                cycle++;
+                for (int k = counter; k < maxcount; k++)
+                {
+                    str2[k].insert(str2[k].begin() + position + 2,
+                                   str2[k][position + 1]);
+                }
+                position++;
+            }
+            reg[inst[i][1]] = reg[inst[i][2]] + reg[inst[i][3]];
+            prestr = "r";
+            prenum = inst[i][1];
+        }
+        else if (inst[i][0] == 3) {
              strs.push_back("sub");
              if (prestr == "lw" &&
                  (prenum == inst[i][2] || prenum == inst[i][3])) {
@@ -93,10 +127,10 @@ void every_thing(ofstream &coup, ifstream &cinp)
                      cycle++;
                  }
              }
-         cycle++;
-         counter++;
-         position++;
-     }
+        cycle++;
+        counter++;
+        position++;
+    }
 
     for (int i = 0; i < maxcount; i++)
     {
@@ -107,7 +141,17 @@ void every_thing(ofstream &coup, ifstream &cinp)
             size = str2[i].size();
         }
     }
-
+    coup << "\n\n    1   2   3   4   5   6   7   8   9   10  11  12  13  14  "
+            "15  16  17  18  19  20\n";
+    for (int i = 0; i < counter; i++)
+    {
+        coup << strs[i] << " ";
+        for (string s : str2[i])
+        {
+            coup << s << " ";
+        }
+        coup << endl;
+    }
     coup << "\n"
          << cycle << " cycles\n";
     coup << "\n$1  $2  $3  $4  $5  $6  $7  $8  $9  $10 $11 $12 $13 $14 $15 $16 "
@@ -119,7 +163,8 @@ void every_thing(ofstream &coup, ifstream &cinp)
     for (int i : reg)
         coup << i << "   ";
 }
-}
-int main(){
+int main()
+{
     every_thing(coup3, cinp3);
+    return 0;
 }
