@@ -22,12 +22,12 @@ void fcinp(int q, int w, int e, int r, int t, ifstream &cinp) {
     oid = t;
 }
 void every_thing(ofstream &coup, ifstream &cinp) {
-    int position = 0, prenum = 0, counter = 0, mem[32], reg[32], cycle = 4;
+    int position = 0, prenum = 0, counter = 0, mem[32], reg[32], cycle = 4, ppnum = 0;
     vector<vector<string>> str2;
     vector<string> str = {"if ", "id ", "ex ", "me ", "wb "}, strs;
     vector<string> strmap = {"lw ", "sw ", "add", "sub", "beq"};
     vector<vector<int>> inst;
-    string prestr = "";
+    string prestr = "", ppstr = "";
     fill(mem, mem + 32, 1);
     fill(reg, reg + 32, 1);
     reg[0] = 0;
@@ -55,11 +55,15 @@ void every_thing(ofstream &coup, ifstream &cinp) {
         if (inst[i][0] == 0) {
             strs.push_back("lw ");
             reg[inst[i][1]] = mem[reg[inst[i][3]] + inst[i][2] / 4];
+            ppstr = prestr;
+            ppnum = prenum;
             prestr = "lw";
             prenum = inst[i][1];
         } else if (inst[i][0] == 1) {
             strs.push_back("sw ");
             mem[reg[inst[i][3]] + inst[i][2] / 4] = reg[inst[i][1]];
+            ppstr = prestr;
+            ppnum = prenum;
             prestr = "";
         } else if (inst[i][0] == 2) {
             strs.push_back("add");
@@ -73,6 +77,8 @@ void every_thing(ofstream &coup, ifstream &cinp) {
                 position++;
             }
             reg[inst[i][1]] = reg[inst[i][2]] + reg[inst[i][3]];
+            ppstr = prestr;
+            ppnum = prenum;
             prestr = "r";
             prenum = inst[i][1];
         } else if (inst[i][0] == 3) {
@@ -87,6 +93,8 @@ void every_thing(ofstream &coup, ifstream &cinp) {
                 position++;
             }
             reg[inst[i][1]] = reg[inst[i][2]] - reg[inst[i][3]];
+            ppstr = prestr;
+            ppnum = prenum;
             prestr = "r";
             prenum = inst[i][1];
         } else {
@@ -112,6 +120,13 @@ void every_thing(ofstream &coup, ifstream &cinp) {
                     position++;
                     cycle++;
                 }
+            }else if((ppnum == inst[i][1] || ppnum == inst[i][2]) && ppstr == "lw"){
+                for (int k = counter; k < maxcount; k++) {
+                        str2[k].insert(str2[k].begin() + position + 2,
+                                       str2[k][position + 1]);
+                    }
+                    position++;
+                    cycle++;
             }
             if (reg[inst[i][1]] == reg[inst[i][2]]) {
                 cycle++;
@@ -124,6 +139,8 @@ void every_thing(ofstream &coup, ifstream &cinp) {
                 strs.push_back(strmap[inst[i + 1][0]]);
                 i += inst[i][3];
             }
+            ppstr = prestr;
+            ppnum = prenum;
             prestr = "";
         }
         cycle++;
@@ -188,7 +205,6 @@ void every_thing(ofstream &coup, ifstream &cinp) {
             "w17 w18 w19 w20 w21 w22 w23 w24 w25 w26 w27 w28 w29 w30 w31 w32\n";
     for (int i : reg)
         coup << i << "   ";
-
         coup << "\n\n    1   2   3   4   5   6   7   8   9   10  11  12  13  14  "
             "15  16  17  18  19  20\n";
     for (int i = 0; i < counter; i++) {
