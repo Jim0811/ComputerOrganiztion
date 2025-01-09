@@ -10,7 +10,7 @@ ofstream coup3("../outputs/test3.txt");
 ofstream coup4("../outputs/test4.txt");
 ofstream coup5("../outputs/test5.txt");
 ofstream coup6("../outputs/test6.txt");
-int oid, a, b, c, maxcount = 20;
+int oid, a, b, c, maxcount = 1000;
 void fcinp(int q, int w, int e, int r, int t, ifstream &cinp) {
     cinp.ignore(q);
     cinp >> a;
